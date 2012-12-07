@@ -69,7 +69,7 @@ int Parsefile (FILE *fp, vector< set<edgeLL> > &graph, vector<int> &energies)
     }
 
     // prinf
-    fprintf(stderr, "%d %d %d\n", num+1, father+1, en_fltoi(energy + e_diff));
+    //fprintf(stderr, "num: %d father: %d energy: %d\n", num+1, father+1, en_fltoi(energy + e_diff));
 
     if (line != NULL) free(line);
   }

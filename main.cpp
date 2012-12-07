@@ -12,8 +12,6 @@
 using namespace std;
 
 extern "C" {
-  #include "fold.h"
-
   #include "compHeights_cmdline.h"
 }
 
@@ -49,10 +47,11 @@ int main(int argc, char **argv)
 
   // now compare with DSUeval energies
   char *line;
-  int correct = 0;
-  int all = 0;
-  int sum = 0;
-  vector<int> devs;
+  vector<vector<int> > devs; // deviations on each distance
+  vector<int> correct;
+  vector<int> all;
+  vector<int> sum;
+  vector<double> stdev;
   while ((line = my_getline(stdin))) {
     int i, j, dist;
     float en;
@@ -63,27 +62,43 @@ int main(int argc, char **argv)
     //printf("%s\n", line);
     //stdout << ;
 
+    // if we are outside of range, just skip it
     if (i>=(int)energies.size() || j>=(int)energies.size()) {
       free(line);
       continue;
     }
 
-    if (ene == res[i][j].first) correct++;
-    else {
-      fprintf(stderr, "%s incorrect %d %d\n", (ene>res[i][j].first?"":"WROOOOOOOOONG"), ene, res[i][j].first);
-      sum += abs(res[i][j].first-ene);
-      devs.push_back(abs(res[i][j].first-ene));
+    // actual code:
+      //resize arrays:
+    if ((int)correct.size() <= dist) {
+      correct.resize(dist+1, 0);
+      all.resize(dist+1, 0);
+      sum.resize(dist+1, 0);
+      devs.resize(dist+1);
+      stdev.resize(dist+1, 0);
     }
-    all++;
+
+    if (ene == res[i][j].first) correct[dist]++;
+    else {
+      //fprintf(stderr, "%s incorrect %d %d\n", (ene>res[i][j].first?"":"WROOOOOOOOONG"), ene, res[i][j].first);
+      sum[dist] += abs(res[i][j].first-ene);
+      devs[dist].push_back(abs(res[i][j].first-ene));
+    }
+    all[dist]++;
     free(line);
   }
 
-  double stdev = 0;
-  for (unsigned int i=0; i<devs.size(); i++) {
-    stdev += (sum/(double)devs.size()-devs[i])*(sum/(double)devs.size()-devs[i]);
+  // do statistics
+  for (unsigned int i=1; i<devs.size(); i++) {
+    for (unsigned int j=0; j<devs[i].size(); j++) {
+      stdev[i] += (sum[i]/(double)devs[i].size()-devs[i][j])*(sum[i]/(double)devs[i].size()-devs[i][j]);
+    }
+    stdev[i] = sqrt(stdev[i]/devs[i].size());
+    printf("dist: %d %d/%d -- average: %.3f stdev: %.3f\n", i, correct[i], all[i], sum[i]/(double)devs[i].size(), stdev[i]);
+    //printf("%d %.4f\n", i, sum[i]/(double)all[i]/100.0);
+    //printf("%d %.2f\n", i, correct[i]/(double)all[i]*100);
   }
-  stdev = sqrt(stdev/devs.size());
-  printf("%d/%d -- average: %.3f stdev: %.3f\n", correct, all, sum/(double)devs.size(), stdev);
+
 
   cmdline_parser_free(&args_info);
   return 0;
