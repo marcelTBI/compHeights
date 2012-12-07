@@ -1,0 +1,12 @@
+# Name of your program
+package "compHeights"
+purpose "coparator for energy heights"
+
+# Version of your program
+version "0.1"   # don't use version if you're using automake
+
+# command line options passed to gengetopt
+args "--file-name=compHeights_cmdline --include-getopt --default-optional --unamed-opts"
+
+# Options
+option "barriers"       b "barrier filebuf to caompare" default="barriers.txt" string
