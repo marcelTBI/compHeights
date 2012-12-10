@@ -78,6 +78,12 @@ int main(int argc, char **argv)
       stdev.resize(dist+1, 0);
     }
 
+    if (res[i][j].first == INT_MAX) {
+      fprintf(stderr, "nonergodic, skipping...\n");
+      free(line);
+      continue;
+    }
+
     if (ene == res[i][j].first) correct[dist]++;
     else {
       //fprintf(stderr, "%s incorrect %d %d\n", (ene>res[i][j].first?"":"WROOOOOOOOONG"), ene, res[i][j].first);
